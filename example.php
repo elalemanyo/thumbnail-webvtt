@@ -14,4 +14,11 @@ $opts = [
   'd'    => TRUE
 ];
 
-createthumbnail($opts);
+try {
+  $var = createthumbnail($opts);
+} catch(Exception $e) {
+  $var = false;
+  echo $e->getMessage();
+}
+
+var_dump($var);

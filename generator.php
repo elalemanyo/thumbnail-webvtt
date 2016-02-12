@@ -29,11 +29,6 @@ function createthumbnail($opts) {
             . '-vf scale=%d:-1,select="not(mod(n\\,%d))" "%s/thumbnails/%s-%%04d.jpg" 2>&1'
     ];
 
-    define('EX_USAGE', 64);
-    define('EX_NOINPUT', 66);
-    define('EX_UNAVAILABLE', 69);
-    define('EX_CANTCREAT', 73);
-
     // process input parameters
     $params['input'] = escapeshellarg($opts['i']);
     if (isset($opts['o'])) {
@@ -50,31 +45,25 @@ function createthumbnail($opts) {
     if (!is_readable($opts['i'])) {
         if (filter_var($opts['i'], FILTER_VALIDATE_URL)) {
             if (checkurl($opts['i']) === false) {
-                echo "Cannot read the url file '{$opts['i']}'";
-                exit(EX_NOINPUT);
+                throw new Exception("Cannot read the url file '{$opts['i']}'");
             }
         }
         else {
-            echo "Cannot read the input file '{$opts['i']}'";
-            exit(EX_NOINPUT);
+            throw new Exception("Cannot read the input file '{$opts['i']}'");
         }
     }
     if (!is_writable($params['output'])) {
-        echo $params['output'];
-        //echo "Cannot write to output directory '{$opts['o']}'";
-        exit(EX_CANTCREAT);
+        throw new Exception("Cannot write to output directory '{$opts['o']}'");
     }
     if (!file_exists($params['output'] . '/thumbnails')) {
         if (!mkdir($params['output'] . '/thumbnails')) {
-            echo "Could not create thumbnail output directory '{$params['output']}/thumbnails'";
-            exit(EX_CANTCREAT);
+            throw new Exception("Could not create thumbnail output directory '{$params['output']}/thumbnails'");
         }
     }
 
     $details = shell_exec(sprintf($commands['details'], $params['input']));
     if ($details === null || !preg_match('/^(?:\s+)?ffmpeg version ([^\s,]*)/i', $details)) {
-        echo 'Cannot find ffmpeg - try specifying the path in the $params variable';
-        exit(EX_UNAVAILABLE);
+        throw new Exception('Cannot find ffmpeg - try specifying the path in the $params variable');
     }
 
     // determine some values we need
@@ -118,8 +107,7 @@ function createthumbnail($opts) {
         )
     ));
     if (!($total = count($files))) {
-        echo "Could not find any thumbnails matching '{$params['output']}/thumbnails/{$name}-\\d{4}.jpg'";
-        exit(EX_NOINPUT);
+        throw new Exception("Could not find any thumbnails matching '{$params['output']}/thumbnails/{$name}-\\d{4}.jpg'");
     }
     sort($files, SORT_NATURAL);
 
@@ -162,7 +150,7 @@ function createthumbnail($opts) {
     }
 
     file_put_contents("{$params['output']}/{$name}.vtt", $vtt);
-    echo "Process completed. Check the output directory '{$params['output']}' for VTT file and images";
+    return $params['output'] . '/' . $name .'.vtt';
 }
 
 
