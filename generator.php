@@ -3,12 +3,13 @@
  * Create the thumbnails for the Video
  * $opts:
  *     -i: The input file to be used.
+ *     -n: The output name to be used. (default video name)
  *     -o: The output directory where the thumbnails and vtt file will be saved
  *     -t: The time span (in seconds) between each thumbnail (default, {$params['timespan']})
  *     -w: The max width of the thumbnail (default, {$params['thumbWidth']})
- *     -v: Verbose - don't coalesce the thumbnails into one image
- *     -p: Generate poster image from a random frame in the video
- *     -d: Delete any previous thumbnails that match before generating new images
+ *     -v: Verbose - don't coalesce the thumbnails into one image (boolean)
+ *     -p: Generate poster image from a random frame in the video (boolean)
+ *     -d: Delete any previous thumbnails that match before generating new images (boolean)
  *
  */
 function createthumbnail($opts) {
