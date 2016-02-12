@@ -171,7 +171,7 @@ function checkurl($url) {
     $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
     curl_close($ch);
 
-    return ($data !== false && $httpcode === 200 && in_array($contentType, $video_contentTypes))? true : false;
+    return ($data !== false && $httpcode === 200 && in_array($contentType, $video_contentTypes));
 }
 
 /**
