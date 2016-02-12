@@ -45,25 +45,25 @@ function createthumbnail($opts) {
     if (!is_readable($opts['i'])) {
         if (filter_var($opts['i'], FILTER_VALIDATE_URL)) {
             if (checkurl($opts['i']) === false) {
-                throw new Exception("Cannot read the url file '{$opts['i']}'");
+                throw new ThumbnailWebVttException("Cannot read the url file '{$opts['i']}'");
             }
         }
         else {
-            throw new Exception("Cannot read the input file '{$opts['i']}'");
+            throw new ThumbnailWebVttException("Cannot read the input file '{$opts['i']}'");
         }
     }
     if (!is_writable($params['output'])) {
-        throw new Exception("Cannot write to output directory '{$opts['o']}'");
+        throw new ThumbnailWebVttException("Cannot write to output directory '{$opts['o']}'");
     }
     if (!file_exists($params['output'] . '/thumbnails')) {
         if (!mkdir($params['output'] . '/thumbnails')) {
-            throw new Exception("Could not create thumbnail output directory '{$params['output']}/thumbnails'");
+            throw new ThumbnailWebVttException("Could not create thumbnail output directory '{$params['output']}/thumbnails'");
         }
     }
 
     $details = shell_exec(sprintf($commands['details'], $params['input']));
     if ($details === null || !preg_match('/^(?:\s+)?ffmpeg version ([^\s,]*)/i', $details)) {
-        throw new Exception('Cannot find ffmpeg - try specifying the path in the $params variable');
+        throw new ThumbnailWebVttException('Cannot find ffmpeg - try specifying the path in the $params variable');
     }
 
     // determine some values we need
@@ -107,7 +107,7 @@ function createthumbnail($opts) {
         )
     ));
     if (!($total = count($files))) {
-        throw new Exception("Could not find any thumbnails matching '{$params['output']}/thumbnails/{$name}-\\d{4}.jpg'");
+        throw new ThumbnailWebVttException("Could not find any thumbnails matching '{$params['output']}/thumbnails/{$name}-\\d{4}.jpg'");
     }
     sort($files, SORT_NATURAL);
 
@@ -173,3 +173,9 @@ function checkurl($url) {
 
     return ($data !== false && $httpcode === 200 && in_array($contentType, $video_contentTypes))? true : false;
 }
+
+/**
+ * ThumbnailWebVttException
+ *
+ */
+class ThumbnailWebVttException extends Exception {}

@@ -16,7 +16,7 @@ $opts = [
 
 try {
   $var = createthumbnail($opts);
-} catch(Exception $e) {
+} catch(ThumbnailWebVttException $e) {
   $var = false;
   echo $e->getMessage();
 }
