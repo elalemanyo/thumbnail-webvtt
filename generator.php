@@ -2,14 +2,14 @@
 /**
  * Create the thumbnails for the Video
  * $opts:
- *     -i: The input file to be used.
- *     -n: The output name to be used. (default video name)
- *     -o: The output directory where the thumbnails and vtt file will be saved
- *     -t: The time span (in seconds) between each thumbnail (default, {$params['timespan']})
- *     -w: The max width of the thumbnail (default, {$params['thumbWidth']})
- *     -v: Verbose - don't coalesce the thumbnails into one image (boolean)
- *     -p: Generate poster image from a random frame in the video (boolean)
- *     -d: Delete any previous thumbnails that match before generating new images (boolean)
+ *     -input: The input file to be used.
+ *     -name: The output name to be used. (default video name)
+ *     -output: The output directory where the thumbnails and vtt file will be saved
+ *     -timespan: The time span (in seconds) between each thumbnail (default, {$params['timespan']})
+ *     -width: The max width of the thumbnail (default, {$params['thumbWidth']})
+ *     -verbose: Verbose - don't coalesce the thumbnails into one image (boolean)
+ *     -poster: Generate poster image from a random frame in the video (boolean)
+ *     -delete: Delete any previous thumbnails that match before generating new images (boolean)
  *
  */
 function createthumbnail($opts) {
@@ -30,30 +30,30 @@ function createthumbnail($opts) {
     ];
 
     // process input parameters
-    $params['input'] = escapeshellarg($opts['i']);
-    if (isset($opts['o'])) {
-        $params['output'] = realpath($opts['o']);
+    $params['input'] = escapeshellarg($opts['input']);
+    if (isset($opts['output'])) {
+        $params['output'] = realpath($opts['output']);
     }
-    if (isset($opts['t']) && (int)$opts['t']) {
-        $params['timespan'] = $opts['t'];
+    if (isset($opts['timespan']) && (int)$opts['timespan']) {
+        $params['timespan'] = $opts['timespan'];
     }
-    if (isset($opts['w']) && (int)$opts['w']) {
-        $params['thumbWidth'] = $opts['w'];
+    if (isset($opts['width']) && (int)$opts['width']) {
+        $params['thumbWidth'] = $opts['width'];
     }
 
     // sanity checks
-    if (!is_readable($opts['i'])) {
-        if (filter_var($opts['i'], FILTER_VALIDATE_URL)) {
-            if (checkurl($opts['i']) === false) {
-                throw new ThumbnailWebVttException("Cannot read the url file '{$opts['i']}'");
+    if (!is_readable($opts['input'])) {
+        if (filter_var($opts['input'], FILTER_VALIDATE_URL)) {
+            if (checkurl($opts['input']) === false) {
+                throw new ThumbnailWebVttException("Cannot read the url file '{$opts['input']}'");
             }
         }
         else {
-            throw new ThumbnailWebVttException("Cannot read the input file '{$opts['i']}'");
+            throw new ThumbnailWebVttException("Cannot read the input file '{$opts['input']}'");
         }
     }
     if (!is_writable($params['output'])) {
-        throw new ThumbnailWebVttException("Cannot write to output directory '{$opts['o']}'");
+        throw new ThumbnailWebVttException("Cannot write to output directory '{$opts['output']}'");
     }
     if (!file_exists($params['output'] . '/thumbnails')) {
         if (!mkdir($params['output'] . '/thumbnails')) {
@@ -74,11 +74,11 @@ function createthumbnail($opts) {
     $start = $time[5];
     $tbr = $tbr[1];
 
-    $name = (isset($opts['n']))? $opts['n'] : strtolower(substr(basename($opts['i']), 0, strrpos(basename($opts['i']), '.')));
+    $name = (isset($opts['name']))? $opts['name'] : strtolower(substr(basename($opts['input']), 0, strrpos(basename($opts['input']), '.')));
 
     // generate random poster if required
-    if (isset($opts['p']) && $opts['p'] === TRUE) {
-        shell_exec(sprintf($commands['poster'], rand(1, $duration - 1), $opts['i'], $params['output'], $name));
+    if (isset($opts['poster']) && $opts['poster'] === TRUE) {
+        shell_exec(sprintf($commands['poster'], rand(1, $duration - 1), $opts['input'], $params['output'], $name));
     }
 
     // generate all thumbnail images
@@ -89,7 +89,7 @@ function createthumbnail($opts) {
         );
     };
 
-    if (isset($opts['d']) && $opts['d'] === TRUE) {
+    if (isset($opts['delete']) && $opts['delete'] === TRUE) {
         $files = new CallbackFilterIterator(
             new FilesystemIterator("{$params['output']}/thumbnails"), $filter
         );
@@ -112,7 +112,7 @@ function createthumbnail($opts) {
     sort($files, SORT_NATURAL);
 
     // create coalesce image if needs be
-    if (isset($opts['v']) && $opts['v'] === FALSE) {
+    if (isset($opts['verbose']) && $opts['verbose'] === FALSE) {
         $thumbsAcross = min($total, $params['spriteWidth']);
         $sizes = getimagesize($files[0]);
         $rows = ceil($total/$thumbsAcross);
@@ -127,7 +127,7 @@ function createthumbnail($opts) {
         $t1 = sprintf('%02d:%02d:%02d.000', ($s / 3600), ($s / 60 % 60), $s % 60);
         $s += $params['timespan'];
         $t2 = sprintf('%02d:%02d:%02d.000', ($s / 3600), ($s / 60 % 60), $s % 60);
-        if (isset($opts['v']) && $opts['v'] !== FALSE) {
+        if (isset($opts['verbose']) && $opts['verbose'] !== FALSE) {
             $vtt .= "{$t1} --> {$t2}\nthumbnails/" . basename($files[$f]);
         } else {
             if ($f && !($f % $thumbsAcross)) {
@@ -141,7 +141,7 @@ function createthumbnail($opts) {
     }
 
     // tidy up
-    if (isset($opts['v']) && $opts['v'] === FALSE) {
+    if (isset($opts['verbose']) && $opts['verbose'] === FALSE) {
         imagejpeg($coalesce, "{$params['output']}/{$name}.jpg", 75);
         for ($s = 0, $f = 0; $f < $total; $f++) {
             unlink($files[$f]);

@@ -1,9 +1,9 @@
 <?php
 $opts = [
-  // 'i' => 'http://www.medien-tube.de/images/media/34958SD.mp4', // long
-  // 'i' => 'http://www.medien-tube.de/images/media/34955.mp4',   // short
-  'i'    => 'http://www.medien-tube.de/images/media/34658.mp4',   // shorter
-  'n'    => 'video',
+  // 'input' => 'http://www.medien-tube.de/images/media/34958SD.mp4', // long
+  // 'input' => 'http://www.medien-tube.de/images/media/34955.mp4',   // short
+  'input'    => 'http://www.medien-tube.de/images/media/34658.mp4',   // shorter
+  'name'     => 'video',
 ];
 ?>
 <!DOCTYPE html>
@@ -23,12 +23,12 @@ $opts = [
   <script>
     var playerInstance = jwplayer("video");
     playerInstance.setup({
-      file: "<?=$opts['i']?>",
-      image: "<?=$opts['n']?>-poster.jpg",
+      file: "<?=$opts['input']?>",
+      image: "<?=$opts['name']?>-poster.jpg",
       width: "50%",
       aspectratio: "16:9",
       tracks: [{
-        file: "<?=$opts['n']?>.vtt",
+        file: "<?=$opts['name']?>.vtt",
         kind: "thumbnails"
       }]
     });
