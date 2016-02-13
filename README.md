@@ -3,9 +3,9 @@ Generate tooltip thumbnail images for videos & associated WebVTT files for use w
 
 ### Requirements
 
-* FFmpeg
+* ffmpeg or avconv
 
-* PHP 5.4+
+* php 5.4+
 
 ### Installation
 Just include `generator.php` in your code.
@@ -14,6 +14,7 @@ Just include `generator.php` in your code.
 
 ```
   Options:
+    -library: ffmpeg or avconv
     -input: The input file to be used.
     -name: The output name to be used. (default video name)
     -ooutput: The output directory where the thumbnails and vtt file will be saved

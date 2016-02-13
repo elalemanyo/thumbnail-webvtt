@@ -2,6 +2,7 @@
 include 'generator.php';
 
 $opts = [
+  'library'  => 'avconv',
   //'input'  => 'http://www.medien-tube.de/images/media/34958SD.mp4', //long
   // 'input' => 'http://www.medien-tube.de/images/media/34955.mp4',   //short
   'input'    => 'http://www.medien-tube.de/images/media/34658.mp4',   //shorter

@@ -14,7 +14,7 @@
  */
 function createthumbnail($opts) {
     $params = [
-        'ffmpeg'      => 'ffmpeg', // the ffmpeg command - full path if needs be
+        'library'     => 'ffmpeg', // the ffmpeg command - full path if needs be
         'input'       => null,     // input video file - specified as command line parameter
         'output'      => __DIR__,  // The output directory
         'timespan'    => 10,       // seconds between each thumbnail
@@ -22,14 +22,10 @@ function createthumbnail($opts) {
         'spriteWidth' => 10        // number of thumbnails per row in sprite sheet
     ];
 
-    $commands = [
-        'details' => $params['ffmpeg'] . ' -i %s 2>&1',
-        'poster'  => $params['ffmpeg'] . ' -ss %d -i %s -y -vframes 1 "%s/%s-poster.jpg" 2>&1',
-        'thumbs'  => $params['ffmpeg'] . ' -ss %0.04f -i %s -y -an -sn -vsync 0 -q:v 5 -threads 1 '
-            . '-vf scale=%d:-1,select="not(mod(n\\,%d))" "%s/thumbnails/%s-%%04d.jpg" 2>&1'
-    ];
-
     // process input parameters
+    if (isset($opts['library'])) {
+        $params['library'] = $opts['library'];
+    }
     $params['input'] = escapeshellarg($opts['input']);
     if (isset($opts['output'])) {
         $params['output'] = realpath($opts['output']);
@@ -40,6 +36,13 @@ function createthumbnail($opts) {
     if (isset($opts['width']) && (int)$opts['width']) {
         $params['thumbWidth'] = $opts['width'];
     }
+
+    $commands = [
+        'details' => $params['library'] . ' -i %s 2>&1',
+        'poster'  => $params['library'] . ' -ss %d -i %s -y -vframes 1 "%s/%s-poster.jpg" 2>&1',
+        'thumbs'  => $params['library'] . ' -ss %0.04f -i %s -y -an -sn -vsync 0 -q:v 5 -threads 1 '
+            . '-vf scale=%d:-1,select="not(mod(n\\,%d))" "%s/thumbnails/%s-%%04d.jpg" 2>&1'
+    ];
 
     // sanity checks
     if (!is_readable($opts['input'])) {
@@ -62,17 +65,18 @@ function createthumbnail($opts) {
     }
 
     $details = shell_exec(sprintf($commands['details'], $params['input']));
-    if ($details === null || !preg_match('/^(?:\s+)?ffmpeg version ([^\s,]*)/i', $details)) {
-        throw new ThumbnailWebVttException('Cannot find ffmpeg - try specifying the path in the $params variable');
+    if ($details === null || !preg_match('/^(?:\s+)?'. $params['library'] .' version ([^\s,]*)/i', $details)) {
+        throw new ThumbnailWebVttException('Cannot find '. $params['library'] .' - try specifying the path in the $params variable');
     }
 
     // determine some values we need
-    $time = $tbr = [];
+    $time = $fps = [];
     preg_match('/Duration: ((\d+):(\d+):(\d+))\.\d+, start: ([^,]*)/is', $details, $time);
-    preg_match('/\b(\d+(?:\.\d+)?) tbr\b/', $details, $tbr);
+    preg_match('/\b(\d+(?:\.\d+)?) fps\b/', $details, $fps);
+
     $duration = ($time[2] * 3600) + ($time[3] * 60) + $time[4];
     $start = $time[5];
-    $tbr = $tbr[1];
+    $fps = $fps[1];
 
     $name = (isset($opts['name']))? $opts['name'] : strtolower(substr(basename($opts['input']), 0, strrpos(basename($opts['input']), '.')));
 
@@ -97,9 +101,10 @@ function createthumbnail($opts) {
             unlink($f);
         }
     }
+
     shell_exec(sprintf($commands['thumbs'],
         $start + .0001, $params['input'], $params['thumbWidth'],
-        $params['timespan'] * $tbr, $params['output'], $name
+        $params['timespan'] * $fps, $params['output'], $name
     ));
     $files = array_values(iterator_to_array(
         new CallbackFilterIterator(
