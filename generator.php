@@ -10,6 +10,7 @@
  *     -verbose: Verbose - don't coalesce the thumbnails into one image (boolean)
  *     -poster: Generate poster image from a random frame in the video (boolean)
  *     -delete: Delete any previous thumbnails that match before generating new images (boolean)
+ *     -videotypes: Accepted video content types. Default: array('video/mp4') (Array)
  *
  */
 function createthumbnail($opts) {
@@ -19,7 +20,8 @@ function createthumbnail($opts) {
         'output'      => __DIR__,  // The output directory
         'timespan'    => 10,       // seconds between each thumbnail
         'thumbWidth'  => 120,      // thumbnail width
-        'spriteWidth' => 10        // number of thumbnails per row in sprite sheet
+        'spriteWidth' => 10,       // number of thumbnails per row in sprite sheet
+        'videotypes'  => array('video/mp4')
     ];
 
     // process input parameters
@@ -37,6 +39,10 @@ function createthumbnail($opts) {
         $params['thumbWidth'] = $opts['width'];
     }
 
+    if (isset($opts['videotypes']) && is_array($opts['videotypes'])) {
+        $params['videotypes'] = $opts['videotypes'];
+    }
+
     $commands = [
         'details' => $params['library'] . ' -i %s 2>&1',
         'poster'  => $params['library'] . ' -ss %d -i %s -y -vframes 1 "%s/%s-poster.jpg" 2>&1',
@@ -47,7 +53,7 @@ function createthumbnail($opts) {
     // sanity checks
     if (!is_readable($opts['input'])) {
         if (filter_var($opts['input'], FILTER_VALIDATE_URL)) {
-            if (checkurl($opts['input']) === false) {
+            if (checkurl($opts['input'], $params['videotypes']) === false) {
                 throw new ThumbnailWebVttException("Cannot read the url file '{$opts['input']}'");
             }
         }
@@ -163,9 +169,7 @@ function createthumbnail($opts) {
  * Check url & Content-Type (eg. 'video/mp4')
  *
  */
-function checkurl($url) {
-    $video_contentTypes = array('video/mp4');
-
+function checkurl($url, $videotypes) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -176,7 +180,7 @@ function checkurl($url) {
     $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
     curl_close($ch);
 
-    return ($data !== false && $httpcode === 200 && in_array($contentType, $video_contentTypes));
+    return ($data !== false && $httpcode === 200 && in_array($contentType, $videotypes));
 }
 
 /**
