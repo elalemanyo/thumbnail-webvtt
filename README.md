@@ -15,6 +15,7 @@ Just include `generator.php` in your code.
 ```
   Options:
     -library: ffmpeg or avconv
+    -videotypes: Accepted video content types. Default: array('video/mp4') (Array)
     -input: The input file to be used.
     -name: The output name to be used. (default video name)
     -ooutput: The output directory where the thumbnails and vtt file will be saved
