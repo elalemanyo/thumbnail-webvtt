@@ -69,4 +69,4 @@ Thumbnails and chapters:
 
 # Credits
 
-* @[amnuts](https://github.com/amnuts) for the [jwplayer-thumbnail-preview-generator](https://github.com/amnuts/jwplayer-thumbnail-preview-generator).
+* [@amnuts](https://github.com/amnuts) for the [jwplayer-thumbnail-preview-generator](https://github.com/amnuts/jwplayer-thumbnail-preview-generator).
